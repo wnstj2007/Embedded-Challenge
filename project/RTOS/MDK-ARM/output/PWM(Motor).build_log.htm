@@ -1,0 +1,53 @@
+<html>
+<body>
+<pre>
+<h1>킮ision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: μVision V5.18.0.0
+Copyright (C) 2016 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: a aaa a Flex license: MDK-ARM Standard Cortex-M only: 27 user(s) (mdk_cm_std) Borrow: 30 Jun 2021
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Standard Cortex-M only: 27 user(s)  Version: 5.18
+Toolchain Path:  C:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 1 (build 61)
+Assembler:       Armasm.exe V5.06 update 1 (build 61)
+Linker/Locator:  ArmLink.exe V5.06 update 1 (build 61)
+Library Manager: ArmAr.exe V5.06 update 1 (build 61)
+Hex Converter:   FromElf.exe V5.06 update 1 (build 61)
+CPU DLL:         SARMCM3.DLL V5.18
+Dialog DLL:      DCM.DLL V1.13.6.0
+Target DLL:      UL2CM3.DLL V1.157.5.0
+Dialog DLL:      TCM.DLL V1.14.8.0
+ 
+<h2>Project:</h2>
+C:\Users\aaa\Desktop\임베디드\텀프\EB2021\2021_배포용_Termproject기본코드\project\RTOS\MDK-ARM\Project.uvprojx
+Project File Date:  05/21/2021
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 1 (build 61)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
+Build target 'PWM(Motor)'
+compiling main.c...
+..\Src\main.c(580): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
+  	 
+TaskCreate( Detect_obstacle, "obstacle", 1000, NULL, 2, NULL);
+..\Src\main.c(582): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
+  	 
+TaskCreate( Motor_control, "motor", 1000, NULL, 2, NULL);
+..\Src\main.c(938): warning:  #1-D: last line of file ends without a newline
+  /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+..\Src\main.c: 3 warnings, 0 errors
+linking...
+Program Size: Code=17296 RO-data=500 RW-data=248 ZI-data=27832  
+FromELF: creating hex file...
+".\output\PWM(Motor).axf" - 0 Error(s), 3 Warning(s).
+
+<h2>Collection of Component include folders:</h2>
+  C:\Users\aaa\Desktop\임베디드\텀프\EB2021\2021_배포용_Termproject기본코드\project\RTOS\MDK-ARM\RTE
+  C:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\2.4.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
+
+<h2>Collection of Component Files used:</h2>
+Build Time Elapsed:  00:00:01
+</pre>
+</body>
+</html>
