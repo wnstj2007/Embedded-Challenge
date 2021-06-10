@@ -178,7 +178,7 @@ PUTCHAR_PROTOTYPE
  void fixLeft(){
                int i;
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
-               for(i=0; i<5; i++) {
+               for(i=0; i<2; i++) {
                            Motor_Stop();
                            osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
 								 
@@ -196,7 +196,7 @@ PUTCHAR_PROTOTYPE
  void fixRight(){
                int i;
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
-               for(i=0; i<50; i++) {
+               for(i=0; i<20; i++) {
                            Motor_Stop();
                            osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
 								 
@@ -216,6 +216,9 @@ PUTCHAR_PROTOTYPE
 uint32_t left = 0;
 uint32_t forward = 0;
 uint32_t right = 0;
+uint32_t direction = 0; // 0: 앞, 1:왼쪽, 2: 오른쪽
+uint32_t front_left = 0;
+uint32_t front_right = 0;
 
 void Detect_obstacle(){
   osDelay(200);  // 태스크 만든 후 약간의 딜레이
@@ -224,7 +227,7 @@ void Detect_obstacle(){
 	for(;;)
     {
 						osDelay(100);	//물체 인식하기 전에 벽에 박는 경우는 osDelay를 줄여서 좀더 많이 검사하도록 수정한다.
-				if( uwDiffCapture2/58 > 0 && uwDiffCapture2/58 <10  )
+				if( uwDiffCapture2/58 > 0 && uwDiffCapture2/58 <8  ) // 전방 장애물
             {         
                   forward = 1;		
                    //  printf("\r\n result = %d", result);
@@ -235,7 +238,7 @@ void Detect_obstacle(){
                   forward = 0;
                   //   printf("\r\n result = %d", result);
             }
-						if( uwDiffCapture3/58 > 0 && uwDiffCapture3/58 <10  )
+						if( uwDiffCapture3/58 > 0 && uwDiffCapture3/58 <6  ) // 왼쪽 장애물
             {         
                   left = 1;		
                    //  printf("\r\n result = %d", result);
@@ -246,7 +249,7 @@ void Detect_obstacle(){
                   left = 0;
                   //   printf("\r\n result = %d", result);
             }
-						if( uwDiffCapture1/58 > 0 && uwDiffCapture1/58 <10  )
+						if( uwDiffCapture1/58 > 0 && uwDiffCapture1/58 <6  ) // 오른쪽 장애물
             {         
                   right = 1;		
                    //  printf("\r\n result = %d", result);
@@ -288,45 +291,79 @@ void Motor_control(){
 	
    for(;;)
     {
-            if(forward == 1) // 앞에 장애물이 있을 때
+					switch(direction) // 시작 시 방향 기준
 						{
-							if(left == 1)
+						case 0:	// 앞을 보고 있을 때			
+							if(forward) // 앞에 장애물이 있을 때
 							{
-								Motor_Stop();
-								turnRight();
-								Motor_Stop();
-								osDelay(1000); // 돌고난 후에 2초간 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								if(left) // 왼쪽에도 장애물이 있을 때
+								{
+									Motor_Stop();
+									turnRight(); // 오른쪽으로 회전
+									direction = 2;
+									Motor_Stop();
+									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								}
+								else // 왼쪽에 장애물이 없을 때
+								{
+									Motor_Stop();
+									turnLeft(); // 왼쪽으로 회전
+									direction = 1;
+									Motor_Stop();
+									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								}
 							}
-							else
+							break;
+							
+						case 1: // 왼쪽을 보고 있을 때
+							if(!right) // 오른쪽에 장애물이 없으면
 							{
+								osDelay(1000); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
 								Motor_Stop();
-								turnLeft();
+								turnRight(); // 오른쪽으로 회전
+								direction = 0;
 								Motor_Stop();
-								osDelay(1000); // 돌고난 후에 2초간 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 							}
-						}
-						if(left == 1) // 왼쪽에 장애물이 있을 때
-						{
-							Motor_Stop();
-							fixRight();
-							Motor_Stop();
-							osDelay(1000); // 돌고난 후에 2초간 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
-						}
-						if(right == 1) // 오른쪽에 장애물이 있을 때
-						{
-							Motor_Stop();
-							fixLeft();
-							Motor_Stop();
-							osDelay(1000); // 돌고난 후에 2초간 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
-						}
-						else{
-							Motor_Forward();
-						}
+							break;
+							
+						case 2: // 오른쪽을 보고 있을 때
+							if(!right) // 왼쪽에 장애물이 없으면
+							{
+								osDelay(1000); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
+								Motor_Stop();
+								turnLeft(); // 왼쪽으로 회전
+								direction = 0;
+								Motor_Stop();
+								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+							}
+							/*
+							if(forward ) // 앞에 장애물이 있을 때
+							{
+								if(left) // 왼쪽에도 장애물이 있을 때
+								{
+									Motor_Stop();
+									turnRight(); // 오른쪽으로 회전
+									Motor_Stop();
+									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								}
+								else // 왼쪽에 장애물이 없을 때
+								{
+									Motor_Stop();
+									turnLeft(); // 왼쪽으로 회전
+									Motor_Stop();
+									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								}
+							}
+							*/
+							break;
+					}
+					Motor_Forward();
     }
    
 }
 
-void Motor_leftright(){
+void Motor_leftright(){ //left right 비슷하게 회전하도록 조정
 	osDelay(200);  // 태스크 만든 후 약간의 딜레이
 	printf("\r\n Motor_control");
 	Motor_Forward();
