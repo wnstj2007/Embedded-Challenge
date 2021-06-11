@@ -138,7 +138,7 @@ PUTCHAR_PROTOTYPE
   */
 
 
- //왼쪽으로 90도 돌기위한 함수
+ //왼쪽으로 크게 돌기위한 함수
  void turnLeft(){
                int i;
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
@@ -149,25 +149,25 @@ PUTCHAR_PROTOTYPE
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Left();
                                                 
-                           while(motorInterrupt1 < 30) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 25) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
                 }
 }
  
- //오른쪽으로 90도 돌기위한 함수
+ //오른쪽으로 크게 돌기위한 함수
  void turnRight(){
                int i;
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
-               for(i=0; i<320; i++) {
+               for(i=0; i<310; i++) {
                            Motor_Stop();
                            osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
 								 
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Right();
                                                 
-                           while(motorInterrupt1 < 30) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 25) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
@@ -185,7 +185,7 @@ PUTCHAR_PROTOTYPE
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Left();
                                                 
-                           while(motorInterrupt1 < 30) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 10) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
@@ -203,7 +203,7 @@ PUTCHAR_PROTOTYPE
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Right();
                                                 
-                           while(motorInterrupt1 < 30) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 10) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
@@ -219,6 +219,8 @@ uint32_t right = 0;
 uint32_t direction = 0; // 0: 앞, 1:왼쪽, 2: 오른쪽
 uint32_t front_left = 0;
 uint32_t front_right = 0;
+uint32_t need_fix_right = 0;
+uint32_t need_fix_left = 0;
 
 void Detect_obstacle(){
   osDelay(200);  // 태스크 만든 후 약간의 딜레이
@@ -238,7 +240,7 @@ void Detect_obstacle(){
                   forward = 0;
                   //   printf("\r\n result = %d", result);
             }
-						if( uwDiffCapture3/58 > 0 && uwDiffCapture3/58 <6  ) // 왼쪽 장애물
+						if( uwDiffCapture3/58 > 0 && uwDiffCapture3/58 <10  ) // 왼쪽 장애물
             {         
                   left = 1;		
                    //  printf("\r\n result = %d", result);
@@ -249,7 +251,7 @@ void Detect_obstacle(){
                   left = 0;
                   //   printf("\r\n result = %d", result);
             }
-						if( uwDiffCapture1/58 > 0 && uwDiffCapture1/58 <6  ) // 오른쪽 장애물
+						if( uwDiffCapture1/58 > 0 && uwDiffCapture1/58 <10 ) // 오른쪽 장애물
             {         
                   right = 1;		
                    //  printf("\r\n result = %d", result);
@@ -293,14 +295,38 @@ void Motor_control(){
     {
 					switch(direction) // 시작 시 방향 기준
 						{
-						case 0:	// 앞을 보고 있을 때			
-							if(forward) // 앞에 장애물이 있을 때
+						case 1: // 왼쪽을 보고 있을 때
+							if(!right) // 오른쪽에 장애물이 없으면
+							{
+								osDelay(1500); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
+								Motor_Stop();
+								turnRight(); // 오른쪽으로 회전
+								direction = 0;
+								Motor_Stop();
+								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+							}
+							else
+							{
+								if(need_fix_left)
+								{
+									Motor_Stop();
+									fixLeft();
+									Motor_Forward();
+								}
+								if(need_fix_right)
+								{
+									Motor_Stop();
+									fixRight();
+									Motor_Forward();
+								}
+							}
+							/*
+							else if(forward) // 앞에 장애물이 있을 때
 							{
 								if(left) // 왼쪽에도 장애물이 있을 때
 								{
 									Motor_Stop();
 									turnRight(); // 오른쪽으로 회전
-									direction = 2;
 									Motor_Stop();
 									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 								}
@@ -308,35 +334,39 @@ void Motor_control(){
 								{
 									Motor_Stop();
 									turnLeft(); // 왼쪽으로 회전
-									direction = 1;
 									Motor_Stop();
 									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 								}
 							}
-							break;
-							
-						case 1: // 왼쪽을 보고 있을 때
-							if(!right) // 오른쪽에 장애물이 없으면
-							{
-								osDelay(1000); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
-								Motor_Stop();
-								turnRight(); // 오른쪽으로 회전
-								direction = 0;
-								Motor_Stop();
-								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
-							}
+							*/
 							break;
 							
 						case 2: // 오른쪽을 보고 있을 때
-							if(!right) // 왼쪽에 장애물이 없으면
+							if(!left) // 왼쪽에 장애물이 없으면
 							{
-								osDelay(1000); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
+								osDelay(1500); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
 								Motor_Stop();
 								turnLeft(); // 왼쪽으로 회전
 								direction = 0;
 								Motor_Stop();
 								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 							}
+							else
+							{
+								if(need_fix_left)
+								{
+									Motor_Stop();
+									fixLeft();
+									Motor_Forward();
+								}
+								if(need_fix_right)
+								{
+									Motor_Stop();
+									fixRight();
+									Motor_Forward();
+								}
+							}
+							break;
 							/*
 							if(forward ) // 앞에 장애물이 있을 때
 							{
@@ -356,7 +386,40 @@ void Motor_control(){
 								}
 							}
 							*/
+						default:	// 앞을 보고 있을 때			
+							if(forward) // 앞에 장애물이 있을 때
+							{
+								if(left) // 왼쪽에도 장애물이 있을 때
+								{
+									Motor_Stop();
+									turnRight(); // 오른쪽으로 회전
+									direction = 2;
+									Motor_Stop();
+									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								}
+								else // 왼쪽에 장애물이 없을 때
+								{
+									Motor_Stop();
+									turnLeft(); // 왼쪽으로 회전
+									direction = 1;
+									Motor_Stop();
+									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
+								}
+							}
+							if(need_fix_left)
+							{
+								Motor_Stop();
+								fixLeft();
+								Motor_Forward();
+							}
+							if(need_fix_right)
+							{
+								Motor_Stop();
+								fixRight();
+								Motor_Forward();
+							}
 							break;
+							
 					}
 					Motor_Forward();
     }
@@ -390,6 +453,8 @@ void IR_Sensor(){
       if(uhADCxLeft >2000) uhADCxLeft= 2000;
       else if(uhADCxLeft<100) uhADCxLeft = 100;
       printf("\r\nIR sensor Left = %d", uhADCxLeft);
+		  if(uhADCxLeft>1800) need_fix_right = 1;
+			else need_fix_right = 0;
       
       HAL_ADC_Start(&AdcHandle2);
       uhADCxRight = HAL_ADC_GetValue(&AdcHandle2);
@@ -397,6 +462,8 @@ void IR_Sensor(){
       if(uhADCxRight >2000) uhADCxRight= 2000;
       else if(uhADCxRight<100) uhADCxRight = 100;
       printf("\r\nIR sensor Right = %d", uhADCxRight);
+		  if(uhADCxRight>1800) need_fix_left = 1;
+			else need_fix_left = 0;
       
        osDelay(10);
    }
@@ -615,7 +682,7 @@ int main(void)
 
 	 
 	 xTaskCreate( Detect_obstacle, "obstacle", 1000, NULL, 2, NULL);
-	 //xTaskCreate( IR_Sensor, "IR", 1000, NULL, 2, NULL);
+	 xTaskCreate( IR_Sensor, "IR", 1000, NULL, 2, NULL);
 	 xTaskCreate( Motor_control, "motor", 1000, NULL, 2, NULL);
    //xTaskCreate( Motor_forandback, "motor", 1000, NULL, 2, NULL);
 	 //xTaskCreate( Motor_leftright, "motor", 1000, NULL, 2, NULL);
