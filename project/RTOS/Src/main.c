@@ -149,7 +149,7 @@ PUTCHAR_PROTOTYPE
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Left();
                                                 
-                           while(motorInterrupt1 < 25) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 30) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
@@ -160,7 +160,7 @@ PUTCHAR_PROTOTYPE
  void turnRight(){
                int i;
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
-               for(i=0; i<310; i++) {
+               for(i=0; i<290; i++) {
                            Motor_Stop();
                            osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
 								 
@@ -173,41 +173,59 @@ PUTCHAR_PROTOTYPE
                            Motor_Stop();
                 }
 }
+ 
+void turnBack() {
+	Motor_Stop();
+	turnLeft();
+	turnLeft();
+}
 
  //왼쪽으로 조금 돌기위한 함수
  void fixLeft(){
+							 osDelay(50);
                int i;
+							 Motor_Backward();
+							 osDelay(500);
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
                for(i=0; i<2; i++) {
                            Motor_Stop();
-                           osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
+                           osDelay(50); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
 								 
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Left();
                                                 
-                           while(motorInterrupt1 < 10) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 50) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
                 }
+							 Motor_Forward();
+								osDelay(300);
+								Motor_Stop();
 }
  
  //오른쪽으로 조금 돌기위한 함수
  void fixRight(){
+							 osDelay(50);
                int i;
+							 Motor_Backward();
+							 osDelay(500);
 							// uBrain마다 다를 수 있으므로 각도는 각자 수정
-               for(i=0; i<20; i++) {
+               for(i=0; i<40; i++) {
                            Motor_Stop();
-                           osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
+                           //osDelay(10); // 여기 딜레이를 낮추면 좀더 부드럽게 돌 수 있다.
 								 
                            motorInterrupt1 = 1;		// 바퀴 회전 값 초기화
                            Motor_Right();
                                                 
-                           while(motorInterrupt1 < 10) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
+                           while(motorInterrupt1 < 500) { 										// 1회 회전시 바퀴 회전수 30만큼 회전 (약 3도) 
                                     vTaskDelay(1/portTICK_RATE_MS);  // motorInterrupt1 값을 읽어오기 위한 딜레이
                            }
                            Motor_Stop();
                 }
+							 Motor_Forward();
+								osDelay(300);
+								Motor_Stop();
 }
  
 
@@ -229,39 +247,32 @@ void Detect_obstacle(){
 	for(;;)
     {
 						osDelay(100);	//물체 인식하기 전에 벽에 박는 경우는 osDelay를 줄여서 좀더 많이 검사하도록 수정한다.
-				if( uwDiffCapture2/58 > 0 && uwDiffCapture2/58 <8  ) // 전방 장애물
+				if( uwDiffCapture2/58 > 0 && uwDiffCapture2/58 <10  ) // 전방 장애물
             {         
                   forward = 1;		
                    //  printf("\r\n result = %d", result);
-                     
             }
             else
             {
                   forward = 0;
                   //   printf("\r\n result = %d", result);
             }
-						if( uwDiffCapture3/58 > 0 && uwDiffCapture3/58 <10  ) // 왼쪽 장애물
+						if( uwDiffCapture3/58 > 0 && uwDiffCapture3/58 <10 ) // 왼쪽 10cm 이내에 장애물이 있음
             {         
-                  left = 1;		
-                   //  printf("\r\n result = %d", result);
-                     
+                  left = 1;	
+									//if(uwDiffCapture3/58 < 2) left = 2;
             }
-            else
-            {
-                  left = 0;
-                  //   printf("\r\n result = %d", result);
-            }
-						if( uwDiffCapture1/58 > 0 && uwDiffCapture1/58 <10 ) // 오른쪽 장애물
+						else {
+									left = 0;
+						}
+						if( uwDiffCapture1/58 > 0 && uwDiffCapture1/58 <10 ) // 오른쪽 10cm 이내에 장애물이 있음
             {         
-                  right = 1;		
-                   //  printf("\r\n result = %d", result);
-                     
+                  right = 1;	
+									//if(uwDiffCapture1/58 < 2) right = 2;
             }
-            else
-            {
-                  right = 0;
-                  //   printf("\r\n result = %d", result);
-            }
+						else {
+									right = 0;
+						}
     }
 }
 
@@ -296,75 +307,82 @@ void Motor_control(){
 					switch(direction) // 시작 시 방향 기준
 						{
 						case 1: // 왼쪽을 보고 있을 때
-							if(!right) // 오른쪽에 장애물이 없으면
+							if(need_fix_left == 1)
 							{
-								osDelay(1500); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
+								Motor_Stop();
+								fixLeft();
+							}
+							if(need_fix_right == 1)
+							{
+								Motor_Stop();
+								fixRight();
+							}
+							if(uwDiffCapture1/58 < 4)
+							{
+								Motor_Stop();
+								fixLeft();
+							}
+							if(uwDiffCapture3/58 < 4)
+							{
+								Motor_Stop();
+								fixRight();
+							}
+							if(right == 0) // 오른쪽에 장애물이 없으면
+							{
+								osDelay(2000); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
 								Motor_Stop();
 								turnRight(); // 오른쪽으로 회전
 								direction = 0;
 								Motor_Stop();
 								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 							}
-							else
+							else if(forward == 1) // 앞에 장애물이 있을 때
 							{
-								if(need_fix_left)
-								{
-									Motor_Stop();
-									fixLeft();
-									Motor_Forward();
-								}
-								if(need_fix_right)
-								{
-									Motor_Stop();
-									fixRight();
-									Motor_Forward();
-								}
+								Motor_Stop();
+								turnBack(); // 뒤로 돌아서 간다
+								direction = 2; // 오른쪽을 보고 있음
+								Motor_Stop();
+								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 							}
-							/*
-							else if(forward) // 앞에 장애물이 있을 때
-							{
-								if(left) // 왼쪽에도 장애물이 있을 때
-								{
-									Motor_Stop();
-									turnRight(); // 오른쪽으로 회전
-									Motor_Stop();
-									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
-								}
-								else // 왼쪽에 장애물이 없을 때
-								{
-									Motor_Stop();
-									turnLeft(); // 왼쪽으로 회전
-									Motor_Stop();
-									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
-								}
-							}
-							*/
 							break;
 							
 						case 2: // 오른쪽을 보고 있을 때
-							if(!left) // 왼쪽에 장애물이 없으면
+							if(need_fix_left == 1)
 							{
-								osDelay(1500); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
+								Motor_Stop();
+								fixLeft();
+							}
+							if(need_fix_right == 1)
+							{
+								Motor_Stop();
+								fixRight();
+							}
+							if(uwDiffCapture1/58 < 4)
+							{
+								Motor_Stop();
+								fixLeft();
+							}
+							if(uwDiffCapture3/58 < 4)
+							{
+								Motor_Stop();
+								fixRight();
+							}
+							if(left == 0) // 왼쪽에 장애물이 없으면
+							{
+								osDelay(2500); // 초음파는 로봇의 절반쯤에 있으므로 나머지 반이 지나갈 수 있도록 대기
 								Motor_Stop();
 								turnLeft(); // 왼쪽으로 회전
 								direction = 0;
 								Motor_Stop();
 								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 							}
-							else
+							else if(forward == 1) // 앞에 장애물이 있을 때
 							{
-								if(need_fix_left)
-								{
-									Motor_Stop();
-									fixLeft();
-									Motor_Forward();
-								}
-								if(need_fix_right)
-								{
-									Motor_Stop();
-									fixRight();
-									Motor_Forward();
-								}
+								Motor_Stop();
+								turnBack(); // 뒤로 돌아서 간다
+								direction = 1; // 왼쪽을 보고 있음
+								Motor_Stop();
+								osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 							}
 							break;
 							/*
@@ -386,10 +404,30 @@ void Motor_control(){
 								}
 							}
 							*/
-						default:	// 앞을 보고 있을 때			
-							if(forward) // 앞에 장애물이 있을 때
+						default:	// 앞을 보고 있을 때
+							if(need_fix_left == 1)
 							{
-								if(left) // 왼쪽에도 장애물이 있을 때
+								Motor_Stop();
+								fixLeft();
+							}
+							if(need_fix_right == 1)
+							{
+								Motor_Stop();
+								fixRight();
+							}
+							if(uwDiffCapture1/58 < 4)
+							{
+								Motor_Stop();
+								fixLeft();
+							}
+							if(uwDiffCapture3/58 < 4)
+							{
+								Motor_Stop();
+								fixRight();
+							}
+							if(forward == 1) // 앞에 장애물이 있을 때
+							{
+								if(left == 1) // 왼쪽에도 장애물이 있을 때
 								{
 									Motor_Stop();
 									turnRight(); // 오른쪽으로 회전
@@ -406,19 +444,6 @@ void Motor_control(){
 									osDelay(1000); // 돌고난 후에 딜레이를 줌으로써 turn 확인해봄(나중에 지움)
 								}
 							}
-							if(need_fix_left)
-							{
-								Motor_Stop();
-								fixLeft();
-								Motor_Forward();
-							}
-							if(need_fix_right)
-							{
-								Motor_Stop();
-								fixRight();
-								Motor_Forward();
-							}
-							break;
 							
 					}
 					Motor_Forward();
@@ -453,7 +478,7 @@ void IR_Sensor(){
       if(uhADCxLeft >2000) uhADCxLeft= 2000;
       else if(uhADCxLeft<100) uhADCxLeft = 100;
       printf("\r\nIR sensor Left = %d", uhADCxLeft);
-		  if(uhADCxLeft>1800) need_fix_right = 1;
+		  if(uhADCxLeft>1400) need_fix_right = 1;
 			else need_fix_right = 0;
       
       HAL_ADC_Start(&AdcHandle2);
@@ -462,7 +487,7 @@ void IR_Sensor(){
       if(uhADCxRight >2000) uhADCxRight= 2000;
       else if(uhADCxRight<100) uhADCxRight = 100;
       printf("\r\nIR sensor Right = %d", uhADCxRight);
-		  if(uhADCxRight>1800) need_fix_left = 1;
+		  if(uhADCxRight>1400) need_fix_left = 1;
 			else need_fix_left = 0;
       
        osDelay(10);

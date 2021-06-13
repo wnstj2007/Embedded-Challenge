@@ -28,20 +28,20 @@ Project File Date:  05/21/2021
 *** Using Compiler 'V5.06 update 1 (build 61)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'PWM(Motor)'
 compiling main.c...
-..\Src\main.c(684): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
+..\Src\main.c(709): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
   	 
 TaskCreate( Detect_obstacle, "obstacle", 1000, NULL, 2, NULL);
-..\Src\main.c(685): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
+..\Src\main.c(710): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
   	 
 TaskCreate( IR_Sensor, "IR", 1000, NULL, 2, NULL);
-..\Src\main.c(686): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
+..\Src\main.c(711): warning:  #167-D: argument of type "void (*)()" is incompatible with parameter of type "pdTASK_CODE"
   	 
 TaskCreate( Motor_control, "motor", 1000, NULL, 2, NULL);
-..\Src\main.c(1042): warning:  #1-D: last line of file ends without a newline
+..\Src\main.c(1067): warning:  #1-D: last line of file ends without a newline
   /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 ..\Src\main.c: 4 warnings, 0 errors
 linking...
-Program Size: Code=17804 RO-data=500 RW-data=260 ZI-data=27836  
+Program Size: Code=18088 RO-data=500 RW-data=260 ZI-data=27836  
 FromELF: creating hex file...
 ".\output\PWM(Motor).axf" - 0 Error(s), 4 Warning(s).
 
